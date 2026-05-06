@@ -112,3 +112,4 @@ python run.py
 - Set a strong `SECRET_KEY` and restrict CORS `allow_origins` in `backend/app.py` for production.
 - Run under a process manager (e.g. systemd, Docker) and use a reverse proxy (e.g. Nginx) for HTTPS.
 - Keep `.env` out of version control (already in `.gitignore`).
+# pgrs_project
