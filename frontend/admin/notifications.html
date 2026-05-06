@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications &amp; Escalations - SPGRS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">Notifications &amp; Escalations</h1>
+            </header>
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-bell" style="margin-right:8px;color:var(--warning-600);"></i>Urgency monitoring</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid status-overview-kpis" style="max-width:100%;">
+                            <div class="stat-card">
+                                <div class="stat-icon danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div class="stat-content"><div id="criticalUnassigned" class="stat-value">—</div><div class="stat-label">Critical unassigned</div></div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon warning"><i class="fa-solid fa-inbox"></i></div>
+                                <div class="stat-content"><div id="pendingCount" class="stat-value">—</div><div class="stat-label">Pending (all)</div></div>
+                            </div>
+                        </div>
+                        <div class="quick-actions-bar" style="margin-top:1rem;">
+                            <a href="grievances.html?priority=CRITICAL" class="btn btn-danger"><i class="fa-solid fa-triangle-exclamation"></i> View critical</a>
+                            <a href="assign_grievance.html" class="btn btn-primary"><i class="fa-solid fa-share-nodes"></i> Assign pending</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (!Utils.requireAdmin()) return;
+            try {
+                var res = await API.Admin.getAlerts();
+                if (res.success && res.data) {
+                    document.getElementById('criticalUnassigned').textContent = res.data.critical_unassigned ?? 0;
+                    document.getElementById('pendingCount').textContent = res.data.pending_count ?? 0;
+                }
+            } catch (e) {
+                document.getElementById('criticalUnassigned').textContent = '0';
+                document.getElementById('pendingCount').textContent = '0';
+            }
+        });
+    </script>
+</body>
+</html>

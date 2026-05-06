@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - SPGRS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">Dashboard</h1>
+                <div class="header-actions">
+                    <span id="liveIndicator" class="live-indicator">
+                        <span class="live-dot"></span> Live
+                    </span>
+                    <a href="grievances.html" class="btn btn-primary btn-sm">View Grievances</a>
+                    <a href="assign_grievance.html" class="btn btn-secondary btn-sm">Assign</a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="kpi-cards-row">
+                    <div class="kpi-card">
+                        <div class="kpi-label">SUBMITTED</div>
+                        <div id="kpiSubmitted" class="kpi-value">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">IN PROGRESS</div>
+                        <div id="kpiInProgress" class="kpi-value">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">RESOLVED</div>
+                        <div id="kpiResolved" class="kpi-value">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">TOTAL USERS</div>
+                        <div id="kpiTotalUsers" class="kpi-value">—</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">AVG RESOLUTION</div>
+                        <div id="kpiAvgResolution" class="kpi-value">—</div>
+                    </div>
+                </div>
+
+                <div class="quick-actions-bar">
+                    <span class="quick-actions-label">Quick actions:</span>
+                    <a href="grievances.html?priority=CRITICAL" class="quick-action-btn"><i class="fa-solid fa-triangle-exclamation"></i> Critical</a>
+                    <a href="grievances.html?status=SUBMITTED" class="quick-action-btn"><i class="fa-solid fa-inbox"></i> Pending</a>
+                    <a href="assign_grievance.html" class="quick-action-btn"><i class="fa-solid fa-share-nodes"></i> Assign</a>
+                    <a href="analytics_dashboard.html" class="quick-action-btn"><i class="fa-solid fa-chart-pie"></i> Analytics</a>
+                </div>
+
+                <div class="dashboard-grid dashboard-charts-row">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Status Distribution</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-fixed-height">
+                                <canvas id="statusDoughnut"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Priority Distribution</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-fixed-height">
+                                <canvas id="priorityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Top Categories</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-fixed-height">
+                                <canvas id="categoryBar"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-full-width">
+                    <div class="card-header">
+                        <h3 class="card-title">Grievance Trend (Last 30 Days)</h3>
+                        <span class="card-subtitle">Submitted vs resolved by date</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-wrapper chart-trend-height" id="trendChartWrapper">
+                            <canvas id="trendLineChart"></canvas>
+                            <div id="trendEmptyState" class="chart-empty-state" style="display: none;">No trend data for the last 30 days.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Grievances by Location</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="chart-wrapper chart-fixed-height">
+                                <canvas id="locationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">Department Performance</h3>
+                            <a href="analytics_dashboard.html" class="btn btn-secondary btn-sm">View details</a>
+                        </div>
+                        <div class="table-container table-compact">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Department</th>
+                                        <th>Assigned</th>
+                                        <th>Resolved</th>
+                                        <th>Rate</th>
+                                        <th>Trust</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deptTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center p-6">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Recent Complaints</h3>
+                        <a href="grievances.html" class="btn btn-secondary btn-sm">View all</a>
+                    </div>
+                    <div class="filters-bar filters-bar-flat">
+                        <div class="filter-group">
+                            <label class="filter-label">Search</label>
+                            <input id="filterSearch" class="filter-input" type="text"
+                                placeholder="Search ID or name..." oninput="debouncedApplyFilters()">
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Location</label>
+                            <select id="filterLocation" class="filter-select" onchange="applyFilters()">
+                                <option value="">All Locations</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Category</label>
+                            <select id="filterCategory" class="filter-select" onchange="applyFilters()">
+                                <option value="">All Categories</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Status</label>
+                            <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                                <option value="">All Status</option>
+                                <option value="SUBMITTED">Submitted</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="RESOLVED">Resolved</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">Priority</label>
+                            <select id="filterPriority" class="filter-select" onchange="applyFilters()">
+                                <option value="">All Priorities</option>
+                                <option value="CRITICAL">Critical</option>
+                                <option value="HIGH">High</option>
+                                <option value="MEDIUM">Medium</option>
+                                <option value="LOW">Low</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>User</th>
+                                    <th>Category</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Supporters</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody id="grievanceTableBody">
+                                <tr>
+                                    <td colspan="7" class="text-center p-6">Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+        .live-indicator { display: inline-flex; align-items: center; gap: 6px; color: #48bb78; font-size: 0.85rem; font-weight: 500; }
+        .live-dot { width: 8px; height: 8px; background: #48bb78; border-radius: 50%; animation: pulse 2s infinite; }
+        .quick-actions-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 1.5rem; padding: 12px 16px; background: var(--gray-100); border-radius: var(--radius-lg); }
+        .quick-actions-label { font-weight: 600; color: var(--gray-700); margin-right: 8px; }
+        .quick-action-btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; background: var(--white); border: 1px solid var(--gray-300); border-radius: var(--radius-md); color: var(--gray-700); text-decoration: none; font-size: 0.875rem; transition: all var(--transition-fast); }
+        .quick-action-btn:hover { background: var(--primary-100); border-color: var(--primary-500); color: var(--primary-700); }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .dashboard-charts-row { grid-template-columns: repeat(3, 1fr); }
+        @media (max-width: 1100px) { .dashboard-charts-row { grid-template-columns: 1fr 1fr; } }
+        @media (max-width: 700px) { .dashboard-charts-row { grid-template-columns: 1fr; } }
+        .card-full-width { margin-bottom: 1.5rem; }
+        .card-subtitle { font-size: 0.8rem; color: var(--gray-500); font-weight: 400; }
+        .chart-wrapper { position: relative; width: 100%; }
+        .chart-fixed-height { min-height: 260px; }
+        .chart-trend-height { min-height: 280px; }
+        .table-compact .table { font-size: 0.875rem; }
+        .filters-bar-flat { margin: 0; border-radius: 0; border-left: 0; border-right: 0; border-top: 0; }
+        .trust-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--gray-200);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            display: inline-block;
+            vertical-align: middle;
+            max-width: 80px;
+            margin-right: 8px;
+        }
+        .trust-bar-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.5s ease;
+        }
+        .chart-empty-state { display: flex; align-items: center; justify-content: center; min-height: 200px; color: var(--gray-500); font-size: 0.9rem; }
+
+        .kpi-cards-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+        .kpi-card {
+            flex: 1;
+            min-width: 140px;
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1rem 1.25rem;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .kpi-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: #2c5282;
+            text-transform: uppercase;
+        }
+        .kpi-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #1a202c;
+            line-height: 1.2;
+        }
+    </style>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script>
+        let statusChart = null;
+        let categoryChart = null;
+        let priorityChart = null;
+        let trendChart = null;
+        let locationChart = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await initAdminDashboard();
+            await loadDashboardAnalytics();
+        });
+
+        function setKpi(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.textContent = val;
+        }
+
+        async function loadDashboardAnalytics() {
+            try {
+                const [overview, categories, departments, trends, locations, usersRes] = await Promise.all([
+                    API.Analytics.getOverview(),
+                    API.Analytics.getCategories(),
+                    API.Analytics.getDepartments(),
+                    API.Analytics.getTrends(),
+                    API.Analytics.getLocations(),
+                    API.Admin.getUsersCount().catch(() => ({ success: false }))
+                ]);
+
+                if (overview.success) {
+                    const s = overview.data.status_distribution || {};
+                    setKpi('kpiSubmitted', s.SUBMITTED ?? '—');
+                    setKpi('kpiInProgress', s.IN_PROGRESS ?? '—');
+                    setKpi('kpiResolved', s.RESOLVED ?? '—');
+                    const avg = overview.data.avg_resolution_hours;
+                    setKpi('kpiAvgResolution', avg != null && avg !== '' ? Number(avg).toFixed(1) + 'h' : '—');
+                    renderStatusChart(overview.data);
+                    renderPriorityChart(overview.data);
+                }
+                if (usersRes && usersRes.success && usersRes.data)
+                    setKpi('kpiTotalUsers', usersRes.data.total_users ?? '—');
+
+                if (categories.success) renderCategoryChart(categories.data);
+                if (departments.success) renderDeptPerformance(departments.data);
+                if (trends.success) renderTrendChart(trends.data);
+                if (locations.success) renderLocationChart(locations.data);
+            } catch (e) { console.error('Analytics load error:', e); }
+        }
+
+        function renderStatusChart(data) {
+            const ctx = document.getElementById('statusDoughnut');
+            if (!ctx) return;
+            const s = data.status_distribution || {};
+            const values = [s.SUBMITTED || 0, s.IN_PROGRESS || 0, s.RESOLVED || 0];
+
+            if (statusChart) statusChart.destroy();
+            statusChart = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Submitted', 'In Progress', 'Resolved'],
+                    datasets: [{
+                        data: values,
+                        backgroundColor: ['#3182ce', '#dd6b20', '#38a169'],
+                        borderWidth: 0,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        function renderPriorityChart(data) {
+            const ctx = document.getElementById('priorityChart');
+            if (!ctx) return;
+            const p = data.priority_distribution || {};
+            const labels = ['Critical', 'High', 'Medium', 'Low'];
+            const values = [p.CRITICAL || 0, p.HIGH || 0, p.MEDIUM || 0, p.LOW || 0];
+
+            if (priorityChart) priorityChart.destroy();
+            priorityChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Count',
+                        data: values,
+                        backgroundColor: ['#c53030', '#dd6b20', '#d69e2e', '#38a169'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        y: { grid: { display: false } }
+                    },
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        function renderCategoryChart(categories) {
+            const ctx = document.getElementById('categoryBar');
+            if (!ctx) return;
+            const top = (categories || []).filter(c => c.total_grievances > 0)
+                .sort((a, b) => b.total_grievances - a.total_grievances).slice(0, 8);
+            const labels = top.map(c => c.category_name.length > 14 ? c.category_name.substring(0, 14) + '...' : c.category_name);
+
+            if (categoryChart) categoryChart.destroy();
+            categoryChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Resolved', data: top.map(c => c.resolved), backgroundColor: '#38a169', borderRadius: 4 },
+                        { label: 'In Progress', data: top.map(c => c.in_progress), backgroundColor: '#dd6b20', borderRadius: 4 },
+                        { label: 'Pending', data: top.map(c => c.pending), backgroundColor: '#3182ce', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11 } } },
+                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { padding: 12, usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        function renderTrendChart(trendsData) {
+            const ctx = document.getElementById('trendLineChart');
+            const emptyEl = document.getElementById('trendEmptyState');
+            if (!ctx) return;
+            if (!trendsData || trendsData.length === 0) {
+                if (trendChart) trendChart.destroy();
+                trendChart = null;
+                if (emptyEl) emptyEl.style.display = 'flex';
+                return;
+            }
+            if (emptyEl) emptyEl.style.display = 'none';
+
+            const sorted = [...trendsData].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = sorted.map(t => {
+                const d = new Date(t.date);
+                return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            });
+            const submitted = sorted.map(t => t.submitted || 0);
+            const resolved = sorted.map(t => t.resolved || 0);
+
+            if (trendChart) trendChart.destroy();
+            trendChart = new Chart(ctx.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Submitted', data: submitted, borderColor: '#3182ce', backgroundColor: 'rgba(49, 130, 206, 0.1)', fill: true, tension: 0.3 },
+                        { label: 'Resolved', data: resolved, borderColor: '#38a169', backgroundColor: 'rgba(56, 161, 105, 0.1)', fill: true, tension: 0.3 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { maxRotation: 45 } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    },
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        function renderLocationChart(locationsData) {
+            const ctx = document.getElementById('locationChart');
+            if (!ctx) return;
+            const top = (locationsData || []).slice(0, 8);
+            const labels = top.map(l => (l.district || '') + (l.state ? ', ' + l.state : ''));
+            const total = top.map(l => l.total_grievances || 0);
+            const resolved = top.map(l => l.resolved || 0);
+
+            if (locationChart) locationChart.destroy();
+            locationChart = new Chart(ctx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: labels.map(l => l.length > 18 ? l.substring(0, 18) + '...' : l),
+                    datasets: [
+                        { label: 'Total', data: total, backgroundColor: '#3182ce', borderRadius: 4 },
+                        { label: 'Resolved', data: resolved, backgroundColor: '#38a169', borderRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { usePointStyle: true } }
+                    }
+                }
+            });
+        }
+
+        function renderDeptPerformance(departments) {
+            const tbody = document.getElementById('deptTableBody');
+            if (!tbody) return;
+            if (!departments || departments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center p-6">No department data</td></tr>';
+                return;
+            }
+            const limited = departments.slice(0, 6);
+            tbody.innerHTML = limited.map(d => {
+                const trustPct = (d.trust_score * 100).toFixed(0);
+                const barColor = trustPct >= 60 ? '#38a169' : trustPct >= 40 ? '#dd6b20' : '#e53e3e';
+                return `<tr>
+                    <td><strong>${d.department_name}</strong></td>
+                    <td>${d.total_assigned}</td>
+                    <td>${d.total_resolved}</td>
+                    <td><span class="badge ${d.resolution_rate >= 50 ? 'badge-success' : 'badge-warning'}">${d.resolution_rate}%</span></td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="trust-bar"><div class="trust-bar-fill" style="width:${trustPct}%;background:${barColor};"></div></div>
+                            <span style="font-weight:600;font-size:0.85rem;">${trustPct}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+    </script>
+</body>
+
+</html>

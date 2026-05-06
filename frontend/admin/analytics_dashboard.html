@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - SPGRS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">Analytics Dashboard</h1>
+            </header>
+            <div class="page-content">
+                <!-- Status Overview: all KPI cards horizontally -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Status Overview</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid status-overview-kpis" id="analyticsStatusKpis">
+                            <div class="stat-card"><div class="stat-icon primary"><i class="fa-solid fa-inbox"></i></div><div class="stat-content"><div id="aTotalGrievances" class="stat-value">—</div><div class="stat-label">Total</div></div></div>
+                            <div class="stat-card"><div class="stat-icon danger"><i class="fa-solid fa-circle-exclamation"></i></div><div class="stat-content"><div id="aCritical" class="stat-value">—</div><div class="stat-label">Critical</div></div></div>
+                            <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-arrow-up"></i></div><div class="stat-content"><div id="aHigh" class="stat-value">—</div><div class="stat-label">High</div></div></div>
+                            <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-minus"></i></div><div class="stat-content"><div id="aMedium" class="stat-value">—</div><div class="stat-label">Medium</div></div></div>
+                            <div class="stat-card"><div class="stat-icon success"><i class="fa-solid fa-arrow-down"></i></div><div class="stat-content"><div id="aLow" class="stat-value">—</div><div class="stat-label">Low</div></div></div>
+                            <div class="stat-card"><div class="stat-icon primary"><i class="fa-solid fa-clock"></i></div><div class="stat-content"><div id="aPending" class="stat-value">—</div><div class="stat-label">Pending</div></div></div>
+                            <div class="stat-card"><div class="stat-icon warning"><i class="fa-solid fa-spinner"></i></div><div class="stat-content"><div id="aInProgress" class="stat-value">—</div><div class="stat-label">In Progress</div></div></div>
+                            <div class="stat-card"><div class="stat-icon success"><i class="fa-solid fa-circle-check"></i></div><div class="stat-content"><div id="aResolved" class="stat-value">—</div><div class="stat-label">Resolved</div></div></div>
+                            <div class="stat-card"><div class="stat-icon info"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="stat-content"><div id="aAvgResolution" class="stat-value">—</div><div class="stat-label">Avg (hrs)</div></div></div>
+                        </div>
+                        <div class="chart-row" style="display:flex;gap:1rem;margin-top:1.5rem;flex-wrap:wrap;">
+                            <div style="flex:1;min-width:260px;max-width:360px;height:220px;"><canvas id="statusChartCanvas"></canvas></div>
+                            <div style="flex:1;min-width:200px;" id="statusLegend"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Category Distribution</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Category</th>
+                                    <th>Total</th>
+                                    <th>Resolved</th>
+                                    <th>In Progress</th>
+                                    <th>Pending</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoryTableBody">
+                                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-map-location-dot" style="margin-right:8px;color:var(--primary-600);"></i>Location Distribution</h3>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>State</th>
+                                    <th>District</th>
+                                    <th>Total</th>
+                                    <th>Resolved</th>
+                                    <th>Resolution %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="locationsTableBody">
+                                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadAnalytics();
+            renderAnalyticsKPIs();
+        });
+        async function renderAnalyticsKPIs() {
+            try {
+                var overview = await API.Analytics.getOverview();
+                if (!overview.success || !overview.data) return;
+                var d = overview.data;
+                var s = d.status_distribution || {};
+                var p = d.priority_distribution || {};
+                var total = (s.SUBMITTED || 0) + (s.IN_PROGRESS || 0) + (s.RESOLVED || 0);
+                setEl('aTotalGrievances', total);
+                setEl('aCritical', p.CRITICAL || 0);
+                setEl('aHigh', p.HIGH || 0);
+                setEl('aMedium', p.MEDIUM || 0);
+                setEl('aLow', p.LOW || 0);
+                setEl('aPending', s.SUBMITTED || 0);
+                setEl('aInProgress', s.IN_PROGRESS || 0);
+                setEl('aResolved', s.RESOLVED || 0);
+                setEl('aAvgResolution', (d.avg_resolution_hours != null ? Number(d.avg_resolution_hours).toFixed(1) : '—') + (d.avg_resolution_hours != null ? 'h' : ''));
+            } catch (e) { console.error(e); }
+        }
+        function setEl(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+        document.addEventListener('DOMContentLoaded', async function loadLocations() {
+            try {
+                var res = await API.Analytics.getLocations();
+                var tbody = document.getElementById('locationsTableBody');
+                if (!tbody) return;
+                if (!res.success || !res.data || res.data.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center">No location data</td></tr>';
+                } else {
+                    tbody.innerHTML = res.data.map(function(l) {
+                        var total = l.total_grievances || 0, resolved = l.resolved || 0;
+                        var pct = total ? Math.round((resolved / total) * 100) : 0;
+                        return '<tr><td>' + (l.state || '—') + '</td><td>' + (l.district || '—') + '</td><td>' + total + '</td><td>' + resolved + '</td><td><span class="badge ' + (pct >= 50 ? 'badge-success' : 'badge-warning') + '">' + pct + '%</span></td></tr>';
+                    }).join('');
+                }
+            } catch (e) { var t = document.getElementById('locationsTableBody'); if (t) t.innerHTML = '<tr><td colspan="5" class="text-center">Error loading</td></tr>'; }
+        });
+    </script>
+</body>
+</html>

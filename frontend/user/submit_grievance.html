@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Grievance - SPGRS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21h18" stroke="#1a202c" stroke-width="1.2" stroke-linecap="round"/><path d="M5 21V9h14v12" stroke="#1a202c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9v6" stroke="#1a202c" stroke-width="1.2"/></svg></div>
+                    <div>
+                        <div class="sidebar-brand-text">SPGRS</div>
+                        <div class="sidebar-brand-subtitle">User Portal</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="user_dashboard.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard
+                    </a>
+                    <a href="submit_grievance.html" class="nav-item active">
+                        <span class="nav-item-icon"><i class="fa-solid fa-square-plus"></i></span> Submit Grievance
+                    </a>
+                    <a href="track_grievance.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-solid fa-magnifying-glass-location"></i></span> Track Grievances
+                    </a>
+                    <a href="user_notifications.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-regular fa-bell"></i></span> Notifications
+                        <span id="notificationBadge" class="nav-item-badge" style="display:none">0</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" onclick="logout(); return false;">
+                    <span class="nav-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Log out
+                </a>
+                <div class="user-profile">
+                    <div id="userAvatar" class="user-avatar">U</div>
+                    <div class="user-info">
+                        <div id="userName" class="user-name">User</div>
+                        <div class="user-role">Citizen</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1 class="header-title">Submit New Grievance</h1>
+            </header>
+
+            <div class="page-content">
+                <div class="card">
+                    <form id="grievanceForm" onsubmit="submitGrievance(event)">
+                        <div class="form-group">
+                            <label class="form-label" for="category">Category *</label>
+                            <select id="category" class="form-control" required>
+                                <option value="">Select a category</option>
+                            </select>
+                        </div>
+
+                        
+                        <div class="form-row-3">
+                            <div class="form-group">
+                                <label class="form-label" for="stateSelect">State *</label>
+                                <select id="stateSelect" class="form-control" required>
+                                    <option value="Tamil Nadu" selected>Tamil Nadu</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="districtSelect">District *</label>
+                                <select id="districtSelect" class="form-control" required onchange="onDistrictChange()">
+                                    <option value="">Select District</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="locationSearch">Place / Location *</label>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" id="locationSearch" class="form-control" placeholder="Type to search location..." autocomplete="off" oninput="filterLocations()" onfocus="filterLocations()">
+                                    <div id="locationDropdown" class="autocomplete-list" style="display:none;"></div>
+                                </div>
+                                <input type="hidden" id="location" value="">
+                            </div>
+                        </div>
+
+                        
+                        <div id="manualAddressGroup" class="manual-address-group" style="display:none;">
+                            <label class="form-label" for="manualAddress">Enter your address manually *</label>
+                            <textarea id="manualAddress" class="form-control" rows="2" placeholder="Enter your full address here..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="complaint">Describe Your Grievance *</label>
+                            <textarea id="complaint" class="form-control" rows="6"
+                                placeholder="Provide detailed description of your grievance..." required
+                                minlength="10"></textarea>
+                            <div class="form-help">Minimum 10 characters. Be specific about the issue.</div>
+                        </div>
+
+                        
+                        <div class="form-group">
+                            <label class="form-label">Upload Evidence (Optional)</label>
+                            <div class="upload-zone" id="uploadZone">
+                                <div class="upload-zone-icon">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 8l-5-5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 3v12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                </div>
+                                <div class="upload-zone-text"><strong>Click to upload</strong> or drag and drop</div>
+                                <div class="upload-zone-hint">Images (JPG, PNG, GIF, WebP) up to 10MB &bull; Videos (MP4, WebM) up to 50MB &bull; Max 5 files</div>
+                                <input type="file" id="fileInput" multiple accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime">
+                            </div>
+                            <div class="upload-preview-grid" id="previewGrid"></div>
+                        </div>
+
+                        <div id="errorMsg" class="alert alert-danger" style="display: none;"></div>
+                        <div id="successMsg" class="alert alert-success" style="display: none;"></div>
+
+                        <div class="d-flex gap-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Submit Grievance</button>
+                            <a href="user_dashboard.html" class="btn btn-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/user.js"></script>
+    <script>
+        let selectedFiles = [];
+        let allLocations = [];
+        let filteredLocations = [];
+        let selectedLocationId = null;
+        let isOthersSelected = false;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Utils.requireUser()) return;
+            const user = TokenManager.getUser();
+            if (user) { document.getElementById('userName').textContent = user.full_name; document.getElementById('userAvatar').textContent = user.full_name.charAt(0); }
+            await loadFormData();
+            setupUploadZone();
+            setupClickOutside();
+        });
+
+        function setupClickOutside() {
+            document.addEventListener('click', (e) => {
+                const wrapper = document.querySelector('.autocomplete-wrapper');
+                if (wrapper && !wrapper.contains(e.target)) {
+                    document.getElementById('locationDropdown').style.display = 'none';
+                }
+            });
+        }
+
+        function onDistrictChange() {
+            document.getElementById('locationSearch').value = '';
+            document.getElementById('location').value = '';
+            selectedLocationId = null;
+            isOthersSelected = false;
+            document.getElementById('manualAddressGroup').style.display = 'none';
+            filterLocations();
+        }
+
+        function filterLocations() {
+            const district = document.getElementById('districtSelect').value;
+            const query = document.getElementById('locationSearch').value.toLowerCase().trim();
+            const dropdown = document.getElementById('locationDropdown');
+
+            if (!district) {
+                dropdown.innerHTML = '<div class="autocomplete-item" style="color:var(--gray-500);">Please select a district first</div>';
+                dropdown.style.display = 'block';
+                return;
+            }
+
+            filteredLocations = allLocations.filter(l => {
+                const matchDistrict = l.district.toLowerCase() === district.toLowerCase();
+                const matchQuery = !query || l.place_name.toLowerCase().includes(query) ||
+                    (l.ward && l.ward.includes(query)) ||
+                    (l.zone_name && l.zone_name.toLowerCase().includes(query));
+                return matchDistrict && matchQuery;
+            });
+
+            if (filteredLocations.length === 0 && !query) {
+                dropdown.innerHTML = '<div class="autocomplete-item" style="color:var(--gray-500);">No locations found for this district</div>';
+            } else {
+                let html = filteredLocations.slice(0, 20).map(l => {
+                    return `<div class="autocomplete-item" onclick="selectLocation(${l.location_id}, '${l.place_name.replace(/'/g, "\\'")}')">
+                        ${l.place_name} <span class="ward-info">Ward ${l.ward || '-'}</span>
+                    </div>`;
+                }).join('');
+
+                html += `<div class="autocomplete-item autocomplete-item-others" onclick="selectOthers()">
+                    Others - Enter address manually
+                </div>`;
+
+                dropdown.innerHTML = html;
+            }
+
+            dropdown.style.display = 'block';
+        }
+
+        function selectLocation(locId, placeName) {
+            document.getElementById('locationSearch').value = placeName;
+            document.getElementById('location').value = locId;
+            selectedLocationId = locId;
+            isOthersSelected = false;
+            document.getElementById('locationDropdown').style.display = 'none';
+            document.getElementById('manualAddressGroup').style.display = 'none';
+        }
+
+        function selectOthers() {
+            document.getElementById('locationSearch').value = 'Others - Manual Entry';
+            document.getElementById('location').value = '';
+            selectedLocationId = null;
+            isOthersSelected = true;
+            document.getElementById('locationDropdown').style.display = 'none';
+            document.getElementById('manualAddressGroup').style.display = 'block';
+            document.getElementById('manualAddress').focus();
+        }
+
+        function setupUploadZone() {
+            const zone = document.getElementById('uploadZone');
+            const fileInput = document.getElementById('fileInput');
+
+            zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                handleFiles(e.dataTransfer.files);
+            });
+            fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+        }
+
+        function handleFiles(fileList) {
+            const newFiles = Array.from(fileList);
+            if (selectedFiles.length + newFiles.length > 5) {
+                Utils.showToast('Maximum 5 files allowed', 'error');
+                return;
+            }
+            for (const file of newFiles) {
+                const validTypes = ['image/jpeg','image/png','image/gif','image/webp','video/mp4','video/webm','video/quicktime'];
+                if (!validTypes.includes(file.type)) {
+                    Utils.showToast(`${file.name}: Unsupported file type`, 'error');
+                    continue;
+                }
+                const isVideo = file.type.startsWith('video/');
+                const maxSize = isVideo ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
+                if (file.size > maxSize) {
+                    Utils.showToast(`${file.name}: File too large`, 'error');
+                    continue;
+                }
+                selectedFiles.push(file);
+            }
+            renderPreviews();
+        }
+
+        function renderPreviews() {
+            const grid = document.getElementById('previewGrid');
+            grid.innerHTML = selectedFiles.map((file, i) => {
+                const isVideo = file.type.startsWith('video/');
+                const url = URL.createObjectURL(file);
+                return `<div class="upload-preview-item">
+                    ${isVideo
+                        ? `<video src="${url}" muted></video>`
+                        : `<img src="${url}" alt="${file.name}">`
+                    }
+                    <button type="button" class="remove-btn" onclick="removeFile(${i})">&times;</button>
+                    <span class="file-type-badge">${isVideo ? 'Video' : 'Image'}</span>
+                </div>`;
+            }).join('');
+        }
+
+        function removeFile(index) {
+            selectedFiles.splice(index, 1);
+            renderPreviews();
+        }
+
+        async function loadFormData() {
+            try {
+                const [catResult, locResult] = await Promise.all([API.Grievance.getCategories(), API.Grievance.getLocations()]);
+                if (catResult.success) {
+                    document.getElementById('category').innerHTML = '<option value="">Select a category</option>' + catResult.data.map(c => `<option value="${c.category_id}">${c.category_name}</option>`).join('');
+                }
+                if (locResult.success) {
+                    allLocations = locResult.data;
+
+                    const districts = [...new Set(allLocations.map(l => l.district))].sort();
+                    document.getElementById('districtSelect').innerHTML = '<option value="">Select District</option>' +
+                        districts.map(d => `<option value="${d}">${d}</option>`).join('');
+                }
+            } catch (error) { Utils.showToast('Failed to load form data', 'error'); }
+        }
+
+        async function submitGrievance(e) {
+            e.preventDefault();
+            const category_id = parseInt(document.getElementById('category').value);
+            const complaint_text = document.getElementById('complaint').value;
+
+            let location_id;
+            if (isOthersSelected) {
+                const manualAddr = document.getElementById('manualAddress').value.trim();
+                if (!manualAddr) {
+                    Utils.showToast('Please enter your address manually', 'error');
+                    return;
+                }
+                const district = document.getElementById('districtSelect').value;
+                const fallback = allLocations.find(l => l.district === district);
+                location_id = fallback ? fallback.location_id : 1;
+            } else {
+                location_id = parseInt(document.getElementById('location').value);
+                if (!location_id) {
+                    Utils.showToast('Please select a location', 'error');
+                    return;
+                }
+            }
+
+            try {
+                Utils.showLoading();
+                const result = await API.Grievance.submit({ category_id, location_id, complaint_text });
+                if (result.success) {
+                    const grievanceId = result.data.grievance_id;
+
+                    if (selectedFiles.length > 0) {
+                        try {
+                            const uploadResult = await API.Grievance.uploadAttachments(grievanceId, selectedFiles);
+                            if (uploadResult.data?.errors?.length > 0) {
+                                Utils.showToast(`Some files failed: ${uploadResult.data.errors.join(', ')}`, 'warning');
+                            }
+                        } catch (uploadErr) {
+                            Utils.showToast('Grievance submitted but some files failed to upload', 'warning');
+                        }
+                    }
+
+                    document.getElementById('successMsg').innerHTML = `Grievance submitted! ID: <strong>${grievanceId}</strong>`;
+                    document.getElementById('successMsg').style.display = 'block';
+                    document.getElementById('grievanceForm').reset();
+                    selectedFiles = [];
+                    document.getElementById('previewGrid').innerHTML = '';
+                    document.getElementById('manualAddressGroup').style.display = 'none';
+                    isOthersSelected = false;
+                    setTimeout(() => window.location = 'track_grievance.html', 2000);
+                }
+            } catch (error) {
+                document.getElementById('errorMsg').textContent = error.message;
+                document.getElementById('errorMsg').style.display = 'block';
+            } finally { Utils.hideLoading(); }
+        }
+    </script>
+</body>
+
+</html>

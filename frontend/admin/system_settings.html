@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - SPGRS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">System Settings</h1>
+                <div class="header-actions">
+                    <span class="badge badge-warning">Super admin</span>
+                </div>
+            </header>
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-folder-open" style="margin-right:8px;color:var(--primary-600);"></i>Categories</h3>
+                        <span id="categoryCount" class="badge badge-info">0</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead><tr><th>ID</th><th>Category name</th></tr></thead>
+                            <tbody id="categorySettingsBody"><tr><td colspan="2" class="text-center p-6">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fa-solid fa-building" style="margin-right:8px;color:var(--success-600);"></i>Departments</h3>
+                        <span id="departmentCount" class="badge badge-info">0</span>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead><tr><th>ID</th><th>Department name</th><th>Trust score</th></tr></thead>
+                            <tbody id="departmentSettingsBody"><tr><td colspan="3" class="text-center p-6">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            if (!Utils.requireAdmin()) return;
+            try {
+                var [catsRes, deptRes] = await Promise.all([
+                    API.Grievance.getCategories(),
+                    API.Admin.getDepartments()
+                ]);
+                var catTbody = document.getElementById('categorySettingsBody');
+                var deptTbody = document.getElementById('departmentSettingsBody');
+                if (catsRes && catsRes.success && catsRes.data) {
+                    document.getElementById('categoryCount').textContent = catsRes.data.length;
+                    if (catsRes.data.length === 0) catTbody.innerHTML = '<tr><td colspan="2" class="text-center p-6">No categories</td></tr>';
+                    else catTbody.innerHTML = catsRes.data.map(c => '<tr><td>' + (c.category_id || '') + '</td><td>' + (c.category_name || '—') + '</td></tr>').join('');
+                } else catTbody.innerHTML = '<tr><td colspan="2" class="text-center p-6">Failed to load</td></tr>';
+                if (deptRes && deptRes.success && deptRes.data) {
+                    document.getElementById('departmentCount').textContent = deptRes.data.length;
+                    if (deptRes.data.length === 0) deptTbody.innerHTML = '<tr><td colspan="3" class="text-center p-6">No departments</td></tr>';
+                    else deptTbody.innerHTML = deptRes.data.map(d => '<tr><td>' + (d.department_id || '') + '</td><td>' + (d.department_name || '—') + '</td><td>' + (d.trust_score != null ? (Number(d.trust_score) * 100).toFixed(0) + '%' : '—') + '</td></tr>').join('');
+                } else deptTbody.innerHTML = '<tr><td colspan="3" class="text-center p-6">Failed to load</td></tr>';
+            } catch (e) {
+                document.getElementById('categorySettingsBody').innerHTML = '<tr><td colspan="2" class="text-center p-6">Error</td></tr>';
+                document.getElementById('departmentSettingsBody').innerHTML = '<tr><td colspan="3" class="text-center p-6">Error</td></tr>';
+            }
+        });
+    </script>
+</body>
+</html>

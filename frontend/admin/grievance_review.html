@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Grievance - SPGRS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .grievance-actions-card .card-subtitle { font-size: 0.8rem; color: var(--gray-500); font-weight: 400; }
+        .grievance-actions-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1.5rem; align-items: start; }
+        @media (max-width: 768px) { .grievance-actions-grid { grid-template-columns: 1fr; } .grievance-action-divider { display: none; } }
+        .grievance-action-block { display: flex; flex-direction: column; gap: 0.75rem; }
+        .grievance-action-block .form-group { margin-bottom: 0; }
+        .action-block-title { font-size: 0.95rem; font-weight: 600; color: var(--gray-800); margin: 0 0 0.25rem 0; }
+        .action-block-desc { font-size: 0.8rem; color: var(--gray-500); margin: 0 0 0.5rem 0; line-height: 1.4; }
+        .grievance-action-divider { width: 1px; min-height: 120px; background: var(--gray-200); justify-self: center; }
+        .status-checklist { display: flex; flex-direction: column; gap: 0.5rem; }
+        .status-checklist .status-option { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: var(--radius-md); cursor: pointer; transition: background 0.15s; }
+        .status-checklist .status-option:hover { background: var(--gray-100); }
+        .status-checklist .status-option input { margin: 0; cursor: pointer; }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">Grievance Review</h1>
+                <div class="header-actions"><a href="grievances.html" class="btn btn-secondary">← Back to Grievances</a></div>
+            </header>
+
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="grievanceId" class="card-title">Loading...</h3>
+                        <div id="grievanceStatus"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid mb-6">
+                            <div class="stat-card">
+                                <div class="stat-content">
+                                    <div class="stat-label">Submitted By</div>
+                                    <div id="userName" class="stat-value" style="font-size:1.2rem">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-content">
+                                    <div class="stat-label">Category</div>
+                                    <div id="grievanceCategory" class="stat-value" style="font-size:1.2rem">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-content">
+                                    <div class="stat-label">Location</div>
+                                    <div id="grievanceLocation" class="stat-value" style="font-size:1.2rem">-</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-4 mb-6">
+                            <div><strong>Priority:</strong> <span id="grievancePriority"></span></div>
+                            <div><strong>Sentiment Score:</strong> <span id="sentimentScore">-</span></div>
+                            <div><strong>Supporters:</strong> <span id="peerCount">0</span></div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="mb-2">Complaint Description</h4>
+                            <p id="grievanceText"
+                                style="background: var(--gray-100); padding: var(--space-4); border-radius: var(--radius-lg);">
+                                -</p>
+                        </div>
+
+                        <div class="text-muted text-small mb-6">Submitted: <span id="grievanceDate">-</span></div>
+                    </div>
+                </div>
+
+                
+                <div id="attachmentsSection" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Uploaded Evidence</h3>
+                        <span id="attachmentCount" class="badge badge-info">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="media-gallery" id="mediaGallery"></div>
+                    </div>
+                </div>
+
+                <div class="card grievance-actions-card">
+                    <div class="card-header">
+                        <h3 class="card-title">Grievance Actions</h3>
+                        <span class="card-subtitle">Update workflow status or assign to a department</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="grievance-actions-grid">
+                            <div class="grievance-action-block">
+                                <h4 class="action-block-title">Update status</h4>
+                                <p class="action-block-desc">Select a status to apply immediately.</p>
+                                <div id="statusChecklist" class="status-checklist" role="group" aria-label="Workflow status">
+                                    <label class="status-option"><input type="radio" name="statusChoice" value="SUBMITTED"> Submitted</label>
+                                    <label class="status-option"><input type="radio" name="statusChoice" value="IN_PROGRESS"> In Progress</label>
+                                    <label class="status-option"><input type="radio" name="statusChoice" value="RESOLVED"> Resolved</label>
+                                </div>
+                            </div>
+                            <div class="grievance-action-divider"></div>
+                            <div class="grievance-action-block">
+                                <h4 class="action-block-title">Assign to department</h4>
+                                <p class="action-block-desc">Select a department to assign immediately.</p>
+                                <div class="form-group">
+                                    <label class="form-label" for="departmentSelect">Department</label>
+                                    <select id="departmentSelect" class="form-control" aria-label="Assign to department">
+                                        <option value="">Select department</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script src="../assets/js/admin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadGrievanceReview();
+            await loadAdminAttachments();
+            // Apply status when user selects a checklist option
+            document.querySelectorAll('input[name="statusChoice"]').forEach(radio => {
+                radio.addEventListener('change', function () { updateStatus(this.value); });
+            });
+            // Apply assignment when user selects a department
+            document.getElementById('departmentSelect').addEventListener('change', function () {
+                if (this.value) assignGrievance();
+            });
+        });
+
+        async function loadAdminAttachments() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) return;
+            try {
+                const result = await API.Grievance.getAttachments(id);
+                if (result.success && result.data.length > 0) {
+                    document.getElementById('attachmentsSection').style.display = 'block';
+                    document.getElementById('attachmentCount').textContent = result.data.length;
+                    const gallery = document.getElementById('mediaGallery');
+                    gallery.innerHTML = result.data.map(a => {
+                        const isVideo = a.file_type === 'VIDEO';
+                        return `<div class="media-gallery-item" onclick="openLightbox('${a.file_url}', '${a.file_type}', '${a.original_name}')">
+                            ${isVideo
+                                ? `<video src="${a.file_url}" muted preload="metadata"></video><div class="play-overlay"><i class="fa-solid fa-play"></i></div>`
+                                : `<img src="${a.file_url}" alt="${a.original_name}" loading="lazy">`
+                            }
+                            <div class="media-info">
+                                <span class="media-name">${a.original_name}</span>
+                                <span class="media-type-badge ${isVideo ? 'video-badge' : 'image-badge'}">${a.file_type}</span>
+                            </div>
+                        </div>`;
+                    }).join('');
+                }
+            } catch (e) { console.error('Failed to load attachments', e); }
+        }
+
+        function openLightbox(url, type, name) {
+            let lb = document.getElementById('mediaLightbox');
+            if (!lb) {
+                lb = document.createElement('div');
+                lb.id = 'mediaLightbox';
+                lb.className = 'media-lightbox';
+                document.body.appendChild(lb);
+            }
+            lb.onclick = (e) => {
+                if (e.target === lb || e.target.classList.contains('lightbox-close')) {
+                    lb.classList.remove('active');
+                    const vid = lb.querySelector('video');
+                    if (vid) vid.pause();
+                    setTimeout(() => { lb.innerHTML = ''; }, 300);
+                }
+            };
+            document.addEventListener('keydown', function closeLb(e) {
+                if (e.key === 'Escape') { lb.classList.remove('active'); const vid = lb.querySelector('video'); if (vid) vid.pause(); setTimeout(() => { lb.innerHTML = ''; }, 300); document.removeEventListener('keydown', closeLb); }
+            });
+            const isVideo = type === 'VIDEO';
+            const displayName = name || 'File';
+            lb.innerHTML = `<button class="lightbox-close">&times;</button>
+                ${isVideo
+                    ? `<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:8px;"></video>`
+                    : `<img src="${url}" alt="${displayName}" style="max-width:90vw;max-height:85vh;border-radius:8px;">`
+                }
+                <div class="lightbox-filename">${displayName}</div>`;
+            lb.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

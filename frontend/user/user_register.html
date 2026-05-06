@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - SPGRS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-logo">
+                <div class="auth-logo-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21h18" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/><path d="M5 21V9h14v12" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9v6" stroke="#fff" stroke-width="1.5"/></svg></div>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join SPGRS to submit grievances</p>
+            </div>
+
+            <form id="registerForm" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name</label>
+                    <input type="text" id="fullName" class="form-control" placeholder="Enter your full name" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <input type="email" id="email" class="form-control" placeholder="Enter your email" required>
+                    <div class="text-muted text-small" style="margin-top:6px;">Use a valid email format like name@example.com.</div>
+                    <div id="emailValidationMsg" class="text-small" style="margin-top:4px; display:none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-control" placeholder="Enter your 10-digit phone number" required maxlength="10" pattern="\d{10}">
+                    <div class="text-muted text-small" style="margin-top:6px;">Enter exactly 10 digits (numbers only).</div>
+                    <div id="phoneValidationMsg" class="text-small" style="margin-top:4px; display:none;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="password-input-wrapper">
+                        <input type="password" id="password" class="form-control"
+                            placeholder="Create a strong password" required minlength="8" pattern="(?=.*[A-Za-z])(?=.*\d).{8,}" title="Password must be at least 8 characters and include at least one letter and one number.">
+                        <button type="button" class="password-toggle-btn" id="passwordToggle" aria-label="Toggle password visibility">
+                            <svg class="password-toggle-icon" id="passwordToggleIcon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="text-muted text-small" style="margin-top:6px;">Use a strong password: at least 8 characters, one letter, and one number.</div>
+                    <div id="passwordValidationMsg" class="text-small" style="margin-top:4px; display:none;"></div>
+                </div>
+
+                <div id="errorMsg" class="alert alert-danger" style="display: none;"></div>
+
+                <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
+            </form>
+
+            <div class="auth-footer">
+                Already have an account? <a href="user_login.html">Sign In</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script>
+        async function handleRegister(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('fullName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phone = document.getElementById('phone').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('errorMsg');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const phoneRegex = /^\d{10}$/;
+            const hasLetter = /[A-Za-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+
+            errorDiv.style.display = 'none';
+
+            if (!emailRegex.test(email)) {
+                errorDiv.textContent = 'Please enter a valid email address.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (!phoneRegex.test(phone)) {
+                errorDiv.textContent = 'Phone number must be exactly 10 digits.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 8 || !hasLetter || !hasNumber) {
+                errorDiv.textContent = 'Password must not be too short (minimum 8 characters), include at least one letter, and include at least one number.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                Utils.showLoading();
+                const result = await API.Auth.register(fullName, email, phone, password);
+                if (result.success) {
+                    window.location.href = 'user_dashboard.html';
+                }
+            } catch (error) {
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                Utils.hideLoading();
+            }
+        }
+        
+        const passwordInput = document.getElementById('password');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const passwordToggle = document.getElementById('passwordToggle');
+        const passwordToggleIcon = document.getElementById('passwordToggleIcon');
+        const emailValidationMsg = document.getElementById('emailValidationMsg');
+        const phoneValidationMsg = document.getElementById('phoneValidationMsg');
+        const passwordValidationMsg = document.getElementById('passwordValidationMsg');
+
+        function showValidationMessage(el, message, isValid) {
+            el.textContent = message;
+            el.style.display = 'block';
+            el.style.color = isValid ? '#2f855a' : '#e53e3e';
+        }
+
+        function validateEmailField() {
+            const email = emailInput.value.trim();
+            if (!email) {
+                emailValidationMsg.style.display = 'none';
+                return;
+            }
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (emailRegex.test(email)) {
+                showValidationMessage(emailValidationMsg, 'Email is valid.', true);
+            } else {
+                showValidationMessage(emailValidationMsg, 'Please enter a valid email address.', false);
+            }
+        }
+
+        function validatePhoneField() {
+            const phone = phoneInput.value.trim();
+            if (!phone) {
+                phoneValidationMsg.style.display = 'none';
+                return;
+            }
+            const phoneRegex = /^\d{10}$/;
+            if (phoneRegex.test(phone)) {
+                showValidationMessage(phoneValidationMsg, 'Phone number is valid.', true);
+            } else {
+                showValidationMessage(phoneValidationMsg, 'Phone number must be exactly 10 digits.', false);
+            }
+        }
+
+        function validatePasswordField() {
+            const password = passwordInput.value;
+            if (!password) {
+                passwordValidationMsg.style.display = 'none';
+                return;
+            }
+            const hasLetter = /[A-Za-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            if (password.length >= 8 && hasLetter && hasNumber) {
+                showValidationMessage(passwordValidationMsg, 'Password is strong.', true);
+            } else {
+                showValidationMessage(passwordValidationMsg, 'Password must be at least 8 characters with at least one letter and one number.', false);
+            }
+        }
+        
+        passwordToggle.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            if (type === 'text') {
+                passwordToggleIcon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line>';
+            } else {
+                passwordToggleIcon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>';
+            }
+        });
+
+        emailInput.addEventListener('input', validateEmailField);
+        phoneInput.addEventListener('input', validatePhoneField);
+        passwordInput.addEventListener('input', validatePasswordField);
+    </script>
+</body>
+
+</html>

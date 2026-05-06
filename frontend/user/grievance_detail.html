@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grievance Detail - SPGRS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand">
+                    <div class="sidebar-brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 21h18" stroke="#1a202c" stroke-width="1.2" stroke-linecap="round"/><path d="M5 21V9h14v12" stroke="#1a202c" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 9v6" stroke="#1a202c" stroke-width="1.2"/></svg></div>
+                    <div>
+                        <div class="sidebar-brand-text">SPGRS</div>
+                        <div class="sidebar-brand-subtitle">User Portal</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main Menu</div>
+                    <a href="user_dashboard.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-solid fa-gauge-high"></i></span> Dashboard
+                    </a>
+                    <a href="submit_grievance.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-solid fa-square-plus"></i></span> Submit Grievance
+                    </a>
+                    <a href="track_grievance.html" class="nav-item active">
+                        <span class="nav-item-icon"><i class="fa-solid fa-magnifying-glass-location"></i></span> Track Grievances
+                    </a>
+                    <a href="user_notifications.html" class="nav-item">
+                        <span class="nav-item-icon"><i class="fa-regular fa-bell"></i></span> Notifications
+                        <span id="notificationBadge" class="nav-item-badge" style="display:none">0</span>
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="#" class="nav-item" onclick="logout(); return false;">
+                    <span class="nav-item-icon"><i class="fa-solid fa-right-from-bracket"></i></span> Log out
+                </a>
+                <div class="user-profile">
+                    <div id="userAvatar" class="user-avatar">U</div>
+                    <div class="user-info">
+                        <div id="userName" class="user-name">User</div>
+                        <div class="user-role">Citizen</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="main-header">
+                <h1 class="header-title">Grievance Details</h1>
+                <div class="header-actions">
+                    <a href="track_grievance.html" class="btn btn-secondary">← Back to List</a>
+                </div>
+            </header>
+
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 id="grievanceId" class="card-title">Loading...</h3>
+                        <div id="grievanceStatus"></div>
+                    </div>
+                    <div class="card-body">
+                        <div class="stats-grid mb-6">
+                            <div class="stat-card">
+                                <div class="stat-icon primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 7h5l2 3h11v9a1 1 0 0 1-1 1H3V7z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Category</div>
+                                    <div id="grievanceCategory" class="stat-value" style="font-size:1.2rem">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon warning"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 21s8-5.5 8-11A8 8 0 0 0 4 10c0 5.5 8 11 8 11z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="10" r="2" stroke="#fff" stroke-width="1.2"/></svg></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Location</div>
+                                    <div id="grievanceLocation" class="stat-value" style="font-size:1.2rem">-</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon success"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M17 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="7" r="3" stroke="#fff" stroke-width="1.2"/></svg></div>
+                                <div class="stat-content">
+                                    <div class="stat-label">Supporters</div>
+                                    <div id="peerCount" class="stat-value">0</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="mb-2">Priority</h4>
+                            <div id="grievancePriority"></div>
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="mb-2">Description</h4>
+                            <p id="grievanceText"
+                                style="background: var(--gray-100); padding: var(--space-4); border-radius: var(--radius-lg);">
+                                -</p>
+                        </div>
+
+                        <div class="text-muted text-small">Submitted on: <span id="grievanceDate">-</span></div>
+                    </div>
+                </div>
+
+                
+                <div id="attachmentsSection" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Uploaded Evidence</h3>
+                        <span id="attachmentCount" class="badge badge-info">0</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="media-gallery" id="mediaGallery"></div>
+                    </div>
+                </div>
+
+                
+                <div id="feedbackSection" class="card" style="display: none;">
+                    <div class="card-header">
+                        <h3 class="card-title">Submit Feedback</h3>
+                    </div>
+                    <div class="card-body">
+                        <form onsubmit="submitFeedback(event)">
+                            <div class="form-group">
+                                <label class="form-label">Rating</label>
+                                <div class="d-flex gap-4">
+                                    <label><input type="radio" name="rating" value="1"> 1 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f6c94d" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.522L19.336 24 12 20.201 4.664 24l1.502-8.728L.5 9.75l7.832-1.732L12 .587z"/></svg></label>
+                                    <label><input type="radio" name="rating" value="2"> 2 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f6c94d" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.522L19.336 24 12 20.201 4.664 24l1.502-8.728L.5 9.75l7.832-1.732L12 .587z"/></svg></label>
+                                    <label><input type="radio" name="rating" value="3"> 3 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f6c94d" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.522L19.336 24 12 20.201 4.664 24l1.502-8.728L.5 9.75l7.832-1.732L12 .587z"/></svg></label>
+                                    <label><input type="radio" name="rating" value="4"> 4 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f6c94d" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.522L19.336 24 12 20.201 4.664 24l1.502-8.728L.5 9.75l7.832-1.732L12 .587z"/></svg></label>
+                                    <label><input type="radio" name="rating" value="5"> 5 <svg width="14" height="14" viewBox="0 0 24 24" fill="#f6c94d" xmlns="http://www.w3.org/2000/svg"><path d="M12 .587l3.668 7.431L23.5 9.75l-5.666 5.522L19.336 24 12 20.201 4.664 24l1.502-8.728L.5 9.75l7.832-1.732L12 .587z"/></svg></label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="feedbackComments">Comments</label>
+                                <textarea id="feedbackComments" class="form-control" rows="3"
+                                    placeholder="Share your experience..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/user.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Utils.requireUser()) return;
+            const user = TokenManager.getUser();
+            if (user) { document.getElementById('userName').textContent = user.full_name; document.getElementById('userAvatar').textContent = user.full_name.charAt(0); }
+            await loadGrievanceDetail();
+            await loadAttachments();
+        });
+
+        async function loadAttachments() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) return;
+            try {
+                const result = await API.Grievance.getAttachments(id);
+                if (result.success && result.data.length > 0) {
+                    document.getElementById('attachmentsSection').style.display = 'block';
+                    document.getElementById('attachmentCount').textContent = result.data.length;
+                    renderMediaGallery(result.data);
+                }
+            } catch (e) { console.error('Failed to load attachments', e); }
+        }
+
+        function renderMediaGallery(attachments) {
+            const gallery = document.getElementById('mediaGallery');
+            gallery.innerHTML = attachments.map(a => {
+                const isVideo = a.file_type === 'VIDEO';
+                return `<div class="media-gallery-item" onclick="openLightbox('${a.file_url}', '${a.file_type}', '${a.original_name}')">
+                    ${isVideo
+                        ? `<video src="${a.file_url}" muted preload="metadata"></video><div class="play-overlay"><svg width="24" height="24" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg></div>`
+                        : `<img src="${a.file_url}" alt="${a.original_name}" loading="lazy">`
+                    }
+                    <div class="media-info">
+                        <span class="media-name">${a.original_name}</span>
+                        <span class="media-type-badge ${isVideo ? 'video-badge' : 'image-badge'}">${a.file_type}</span>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function openLightbox(url, type, name) {
+            let lb = document.getElementById('mediaLightbox');
+            if (!lb) {
+                lb = document.createElement('div');
+                lb.id = 'mediaLightbox';
+                lb.className = 'media-lightbox';
+                document.body.appendChild(lb);
+            }
+            lb.onclick = (e) => {
+                if (e.target === lb || e.target.classList.contains('lightbox-close')) {
+                    lb.classList.remove('active');
+                    const vid = lb.querySelector('video');
+                    if (vid) vid.pause();
+                    setTimeout(() => { lb.innerHTML = ''; }, 300);
+                }
+            };
+            document.addEventListener('keydown', function closeLb(e) {
+                if (e.key === 'Escape') { lb.classList.remove('active'); const vid = lb.querySelector('video'); if (vid) vid.pause(); setTimeout(() => { lb.innerHTML = ''; }, 300); document.removeEventListener('keydown', closeLb); }
+            });
+            const isVideo = type === 'VIDEO';
+            const displayName = name || 'File';
+            lb.innerHTML = `<button class="lightbox-close">&times;</button>
+                ${isVideo
+                    ? `<video src="${url}" controls autoplay style="max-width:90vw;max-height:85vh;border-radius:8px;"></video>`
+                    : `<img src="${url}" alt="${displayName}" style="max-width:90vw;max-height:85vh;border-radius:8px;">`
+                }
+                <div class="lightbox-filename">${displayName}</div>`;
+            lb.classList.add('active');
+        }
+    </script>
+</body>
+
+</html>

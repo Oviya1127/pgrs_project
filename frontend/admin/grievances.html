@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grievances - SPGRS Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <style>
+        .grievance-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem; border-bottom: 1px solid var(--gray-200); padding-bottom: 8px; }
+        .grievance-tabs a { padding: 8px 16px; border-radius: var(--radius-md); color: var(--gray-600); text-decoration: none; font-weight: 500; font-size: 0.9rem; }
+        .grievance-tabs a:hover { background: var(--gray-100); color: var(--gray-800); }
+        .grievance-tabs a.active { background: var(--primary-100); color: var(--primary-700); }
+        .bulk-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <aside id="admin-sidebar" class="sidebar"></aside>
+        <main class="main-content">
+            <header class="main-header" style="background: #1a202c;">
+                <h1 class="header-title">Grievances</h1>
+                <div class="header-actions">
+                    <a href="assign_grievance.html" class="btn btn-primary"><i class="fa-solid fa-share-nodes"></i> Bulk assign</a>
+                </div>
+            </header>
+            <div class="page-content">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Central Grievance Management</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grievance-tabs" id="grievanceTabs">
+                            <a href="#" class="tab-link active" data-status="" data-priority="">All Grievances</a>
+                            <a href="#" class="tab-link" data-status="" data-priority="CRITICAL">Critical Priority</a>
+                            <a href="#" class="tab-link" data-status="IN_PROGRESS" data-priority="">In Progress</a>
+                            <a href="#" class="tab-link" data-status="RESOLVED" data-priority="">Resolved</a>
+                            <a href="duplicate_management.html" class="tab-link"><i class="fa-solid fa-copy"></i> Duplicate Linked</a>
+                        </div>
+                        <div class="filters-bar">
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fa-solid fa-magnifying-glass"></i> Search ID</label>
+                                <input id="filterSearch" class="filter-input" type="text" placeholder="Grievance ID..." oninput="debouncedApply()">
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fa-solid fa-folder-open"></i> Category</label>
+                                <select id="filterCategory" class="filter-select" onchange="applyFilters()">
+                                    <option value="">All Categories</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fa-solid fa-location-dot"></i> Location</label>
+                                <select id="filterLocation" class="filter-select" onchange="applyFilters()">
+                                    <option value="">All Locations</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fa-solid fa-bolt"></i> Priority</label>
+                                <select id="filterPriority" class="filter-select" onchange="applyFilters()">
+                                    <option value="">All Priorities</option>
+                                    <option value="CRITICAL">Critical</option>
+                                    <option value="HIGH">High</option>
+                                    <option value="MEDIUM">Medium</option>
+                                    <option value="LOW">Low</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label class="filter-label"><i class="fa-solid fa-flag"></i> Status</label>
+                                <select id="filterStatus" class="filter-select" onchange="applyFilters()">
+                                    <option value="">All Status</option>
+                                    <option value="SUBMITTED">Submitted</option>
+                                    <option value="IN_PROGRESS">In Progress</option>
+                                    <option value="RESOLVED">Resolved</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>User</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th>Status</th>
+                                        <th>Supporters</th>
+                                        <th>Created</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="grievanceTableBody">
+                                    <tr><td colspan="8" class="text-center p-6">Loading...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/admin-layout.js?v=3"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Utils.requireAdmin()) return;
+            await loadFilterOptions();
+            applyFiltersFromUrl();
+            await loadGrievances(getFilters());
+            document.querySelectorAll('.tab-link[data-status]').forEach(a => {
+                a.addEventListener('click', function (e) {
+                    if (this.getAttribute('href') === '#') e.preventDefault();
+                    if (this.classList.contains('active')) return;
+                    document.querySelectorAll('.tab-link').forEach(x => x.classList.remove('active'));
+                    this.classList.add('active');
+                    var s = this.getAttribute('data-status') || '';
+                    var p = this.getAttribute('data-priority') || '';
+                    document.getElementById('filterStatus').value = s;
+                    document.getElementById('filterPriority').value = p;
+                    loadGrievances(getFilters());
+                });
+            });
+        });
+        function applyFiltersFromUrl() {
+            var params = new URLSearchParams(window.location.search);
+            var status = params.get('status'), priority = params.get('priority');
+            if (status) document.getElementById('filterStatus').value = status;
+            if (priority) document.getElementById('filterPriority').value = priority;
+        }
+        async function loadFilterOptions() {
+            try {
+                const [cats, locs] = await Promise.all([
+                    API.Grievance.getCategories(),
+                    API.Grievance.getLocations()
+                ]);
+                var catSelect = document.getElementById('filterCategory');
+                var locSelect = document.getElementById('filterLocation');
+                if (cats && cats.success && catSelect)
+                    catSelect.innerHTML = '<option value="">All Categories</option>' + cats.data.map(c => '<option value="' + c.category_id + '">' + c.category_name + '</option>').join('');
+                if (locs && locs.success && locSelect)
+                    locSelect.innerHTML = '<option value="">All Locations</option>' + locs.data.map(l => {
+                        var ward = l.ward ? 'ward:' + l.ward : 'ward:-';
+                        var zone = l.zone_name || '-';
+                        var place = l.place_name ? l.place_name + ', ' : '';
+                        return '<option value="' + l.location_id + '">' + place + l.district + ', ' + l.state + ' (' + ward + ', ' + zone + ')</option>';
+                    }).join('');
+            } catch (e) { console.error(e); }
+        }
+        function getFilters() {
+            var f = { page: 1, per_page: 100 };
+            var s = document.getElementById('filterStatus').value, p = document.getElementById('filterPriority').value;
+            var c = document.getElementById('filterCategory').value, l = document.getElementById('filterLocation').value;
+            var q = document.getElementById('filterSearch').value;
+            if (s) f.status = s; if (p) f.priority_level = p; if (c) f.category_id = c; if (l) f.location_id = l; if (q) f.search = q;
+            return f;
+        }
+        var filterTimer;
+        function debouncedApply() { clearTimeout(filterTimer); filterTimer = setTimeout(applyFilters, 300); }
+        function applyFilters() { loadGrievances(getFilters()); }
+        async function loadGrievances(filters) {
+            try {
+                Utils.showLoading();
+                var result = await API.Admin.getGrievances(filters);
+                var tbody = document.getElementById('grievanceTableBody');
+                if (!result.success) { tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6">Failed to load</td></tr>'; return; }
+                var items = result.data.items || [];
+                if (items.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center p-6">No grievances found</td></tr>';
+                } else {
+                    tbody.innerHTML = items.map(g => `
+                        <tr>
+                            <td><strong>${g.grievance_id}</strong></td>
+                            <td>${g.user_name || 'Anonymous'}</td>
+                            <td>${g.category_name || '-'}</td>
+                            <td><span class="${Utils.getPriorityClass(g.priority_level)} priority-badge">${Utils.getPriorityLabel(g.priority_level)}</span></td>
+                            <td><span class="${Utils.getStatusClass(g.status)} status-badge">${Utils.getStatusLabel(g.status)}</span></td>
+                            <td>${g.peer_count || 0}</td>
+                            <td>${Utils.timeAgo(g.created_at)}</td>
+                            <td>
+                                <a href="grievance_review.html?id=${g.grievance_id}" class="btn btn-sm btn-primary">View</a>
+                                <a href="assign_grievance.html" class="btn btn-sm btn-secondary">Assign</a>
+                            </td>
+                        </tr>
+                    `).join('');
+                }
+            } catch (err) { Utils.showToast(err.message, 'error'); document.getElementById('grievanceTableBody').innerHTML = '<tr><td colspan="8" class="text-center p-6">Error loading</td></tr>'; }
+            finally { Utils.hideLoading(); }
+        }
+    </script>
+</body>
+</html>
