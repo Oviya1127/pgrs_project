@@ -113,3 +113,7 @@ python run.py
 - Run under a process manager (e.g. systemd, Docker) and use a reverse proxy (e.g. Nginx) for HTTPS.
 - Keep `.env` out of version control (already in `.gitignore`).
 # pgrs_project
+
+
+  #Admin Login:  sara_admin@gmail.com / admin123
+  #Test User:    testing@gmail.com / testing123

@@ -1,7 +1,3 @@
-"""
-Create or update the default admin user (sara_admin@gmail.com / admin123).
-Ensures user exists in users and has an entry in admins table.
-"""
 import asyncio
 import sys
 import os
@@ -17,9 +13,9 @@ async def create_new_admin():
     try:
         await get_pool()
         
-        admin_email = "sara_admin@gmail.com"
+        admin_email = "oviya_admin@gmail.com"
         admin_password = "admin123"
-        admin_name = "Sara Admin"
+        admin_name = "oviya Admin"
         admin_phone = "9999999999"
         
         existing_user = await db.fetch_one(
