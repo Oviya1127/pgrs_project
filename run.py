@@ -1,7 +1,3 @@
-"""
-SPGRS – Smart Public Grievance Redressal System
-Entry point: starts API + user portal (8000) and admin static server (8001).
-"""
 import asyncio
 import sys
 import os
