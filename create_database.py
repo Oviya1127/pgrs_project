@@ -1,14 +1,3 @@
-"""
-SPGRS Database Setup Script
-============================
-Creates the database (if not exists), drops all tables, recreates them,
-and seeds with initial data. Passwords are bcrypt-hashed.
-
-Uses config/settings (and .env) for database credentials.
-
-Usage:
-    python create_database.py
-"""
 
 import asyncio
 import sys
