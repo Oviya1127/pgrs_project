@@ -1,41 +1,61 @@
 """Application configuration settings."""
 import os
-from pydantic_settings import BaseSettings
 from functools import lru_cache
-
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    DB_HOST: str = "localhost"
-    DB_PORT: int = 5432
-    DB_NAME: str = "pgrs_project"
-    DB_USER: str = "postgres"
-    DB_PASSWORD: str = ""
+    # -----------------------------
+    # DATABASE (NO DEFAULTS)
+    # -----------------------------
+    DB_HOST: str
+    DB_PORT: int
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
 
-    SECRET_KEY: str = "change-this-to-a-strong-random-secret-key"
+    # -----------------------------
+    # SECURITY
+    # -----------------------------
+    SECRET_KEY: str
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours
 
+    # -----------------------------
+    # CLOUDINARY (optional)
+    # -----------------------------
     CLOUDINARY_CLOUD_NAME: str = ""
     CLOUDINARY_API_KEY: str = ""
     CLOUDINARY_API_SECRET: str = ""
 
+    # -----------------------------
+    # APP INFO
+    # -----------------------------
     APP_NAME: str = "Smart Public Grievance Redressal System"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
 
+    # -----------------------------
+    # ENV FILE (LOCAL DEV ONLY)
+    # -----------------------------
     model_config = {
-        "env_file": os.path.join(_PROJECT_ROOT, ".env"),
+        "env_file": ".env",
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
 
+    # -----------------------------
+    # DATABASE URL BUILDER
+    # -----------------------------
     @property
     def database_url(self) -> str:
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        return (
+            f"postgresql://{self.DB_USER}:"
+            f"{self.DB_PASSWORD}@{self.DB_HOST}:"
+            f"{self.DB_PORT}/{self.DB_NAME}"
+        )
 
 
 @lru_cache()
