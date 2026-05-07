@@ -14,22 +14,19 @@ env:
 jobs:
 
 # -------------------------------
-# 1. BUILD
+# 1. BUILD IMAGE (LOCAL BUILD ONLY)
 # -------------------------------
   build:
-    name: Build and Test
+    name: Build Docker Image
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
       - name: Build Docker image
         run: |
-          docker build -t $ECR_REPOSITORY:$IMAGE_TAG .
+          docker build -t code-smart:${IMAGE_TAG} .
 
 # -------------------------------
 # 2. PUSH TO ECR
@@ -43,7 +40,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # AWS Credentials
+      # AWS AUTH
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -51,9 +48,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # -------------------------------
-      # AUTO CREATE ECR REPOSITORY
-      # -------------------------------
+      # CREATE ECR REPO IF NOT EXISTS
       - name: Create ECR repo if not exists
         run: |
           aws ecr describe-repositories \
@@ -63,19 +58,26 @@ jobs:
             --repository-name $ECR_REPOSITORY \
             --region $AWS_REGION
 
-      # -------------------------------
       # LOGIN TO ECR
-      # -------------------------------
       - name: Login to Amazon ECR
+        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # -------------------------------
-      # BUILD + PUSH IMAGE
-      # -------------------------------
+      # BUILD + PUSH IMAGE (FIXED SAFE VERSION)
       - name: Build, tag and push image
         run: |
+          set -e
+
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
+
+          if [ -z "$ACCOUNT_ID" ]; then
+            echo "ERROR: ACCOUNT_ID is empty"
+            exit 1
+          fi
+
+          ECR_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}
+
+          echo "Using ECR: $ECR_URI"
 
           docker build -t $ECR_URI:$IMAGE_TAG .
           docker tag $ECR_URI:$IMAGE_TAG $ECR_URI:latest
@@ -105,15 +107,22 @@ jobs:
             --name $EKS_CLUSTER_NAME \
             --region $AWS_REGION
 
+      # ENSURE NAMESPACE EXISTS
+      - name: Ensure namespace exists
+        run: |
+          kubectl create namespace production --dry-run=client -o yaml | kubectl apply -f -
+
+      # DEPLOY IMAGE UPDATE
       - name: Deploy to Kubernetes (rolling update)
         run: |
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ECR_URI=$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPOSITORY
+          ECR_URI=${ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}
 
           kubectl set image deployment/code-smart \
-            code-smart=$ECR_URI:$IMAGE_TAG \
+            nginx=$ECR_URI:$IMAGE_TAG \
             -n production
 
+      # VERIFY
       - name: Verify deployment
         run: |
           kubectl rollout status deployment/code-smart -n production
