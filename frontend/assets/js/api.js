@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = 'const API_BASE_URL = 'http://a771fb8d8395d4e48bb768a3ddbde378-15164050.ap-south-1.elb.amazonaws.com/api';';
 
 const TokenManager = {
     getToken() { return localStorage.getItem('access_token'); },
