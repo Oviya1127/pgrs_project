@@ -1,3 +1,4 @@
+"""Application configuration settings."""
 import os
 from functools import lru_cache
 from pydantic_settings import BaseSettings
